@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# update path
+export PATH=/usr/local/bin:${PATH}:/sbin:/usr/local/sbin
+
+# add rust path
+export PATH="${HOME}/.cargo/bin:${PATH}"
+
+# The next line updates PATH for the Google Cloud SDK.
+# shellcheck source=/dev/null
+if [ -f "${HOME}/.google-cloud-sdk/path.bash.inc" ]; then . "${HOME}/.google-cloud-sdk/path.bash.inc"; fi
+
+# The next line enables shell command completion for gcloud.
+# shellcheck source=/dev/null
+if [ -f "${HOME}/.google-cloud-sdk/completion.bash.inc" ]; then . "${HOME}/.google-cloud-sdk/completion.bash.inc"; fi
+
+export PATH="${HOME}/.google-cloud-sdk/bin:${PATH}"
+
+# Homebrew
+export PATH="/opt/homebrew/bin:${PATH}"
+export PATH="/opt/homebrew/sbin:${PATH}"
+export LIBRARY_PATH="/opt/homebrew/lib:${LIBRARY_PATH}"
+export LDFLAGS="${LDFLAGS} -L/opt/homebrew/lib"
+export CPPFLAGS="${CPPFLAGS} -I/opt/homebrew/include"
+
+# shellcheck source=/dev/null
+if [ -r "/opt/homebrew/etc/profile.d/bash_completion.sh" ]; then . "/opt/homebrew/etc/profile.d/bash_completion.sh"; fi
