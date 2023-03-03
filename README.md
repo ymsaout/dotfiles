@@ -1,6 +1,6 @@
 # dotfiles
 
-[![make test](https://github.com/jessfraz/dotfiles/workflows/make%20test/badge.svg)](https://github.com/jessfraz/dotfiles/actions?query=workflow%3A%22make+test%22+branch%3Amaster)
+[![make test](https://github.com/ymsaout/dotfiles/workflows/make%20test/badge.svg)](https://github.com/ymsaout/dotfiles/actions?query=workflow%3A%22make+test%22+branch%3Amaster)
 
 **Table of Contents**
 
