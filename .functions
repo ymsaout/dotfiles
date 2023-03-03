@@ -1,26 +1,5 @@
 #!/bin/bash
 
-# Simple calculator
-calc() {
-	local result=""
-	result="$(printf "scale=10;%s\\n" "$*" | bc --mathlib | tr -d '\\\n')"
-	#						└─ default (when `--mathlib` is used) is 20
-
-	if [[ "$result" == *.* ]]; then
-		# improve the output for decimal numbers
-		# add "0" for cases like ".5"
-		# add "0" for cases like "-.5"
-		# remove trailing zeros
-		printf "%s" "$result" |
-			sed -e 's/^\./0./'  \
-			-e 's/^-\./-0./' \
-			-e 's/0*$//;s/\.$//'
-	else
-		printf "%s" "$result"
-	fi
-	printf "\\n"
-}
-
 # Create a new directory and enter it
 mkd() {
 	mkdir -p "$@"
@@ -223,16 +202,6 @@ v() {
 	fi
 }
 
-# `o` with no arguments opens the current directory, otherwise opens the given
-# location
-o() {
-	if [ $# -eq 0 ]; then
-		xdg-open .	> /dev/null 2>&1
-	else
-		xdg-open "$@" > /dev/null 2>&1
-	fi
-}
-
 # `tre` is a shorthand for `tree` with hidden files and color enabled, ignoring
 # the `.git` directory, listing directories first. The output gets piped into
 # `less` with options to preserve color and line numbers, unless the output is
@@ -294,33 +263,6 @@ repo() {
 	open "$url" &> /dev/null || (echo "Using $(type open) to open URL failed." && exit 1);
 }
 
-# Get colors in manual pages
-man() {
-	env \
-		LESS_TERMCAP_mb="$(printf '\e[1;31m')" \
-		LESS_TERMCAP_md="$(printf '\e[1;31m')" \
-		LESS_TERMCAP_me="$(printf '\e[0m')" \
-		LESS_TERMCAP_se="$(printf '\e[0m')" \
-		LESS_TERMCAP_so="$(printf '\e[1;44;33m')" \
-		LESS_TERMCAP_ue="$(printf '\e[0m')" \
-		LESS_TERMCAP_us="$(printf '\e[1;32m')" \
-		man "$@"
-}
-
-# Use feh to nicely view images
-openimage() {
-	local types='*.jpg *.JPG *.png *.PNG *.gif *.GIF *.jpeg *.JPEG'
-
-	cd "$(dirname "$1")" || exit
-	local file
-	file=$(basename "$1")
-
-	feh -q "$types" --auto-zoom \
-		--sort filename --borderless \
-		--scale-down --draw-filename \
-		--image-bg black \
-		--start-at "$file"
-}
 
 # get dbus session
 dbs() {
@@ -425,48 +367,9 @@ golistdeps(){
 	)
 }
 
-# get the name of a x window
-xname(){
-	local window_id=$1
-
-	if [[ -z $window_id ]]; then
-		echo "Please specifiy a window id, you find this with 'xwininfo'"
-
-		return 1
-	fi
-
-	local match_string='".*"'
-	local match_qstring='"[^"\\]*(\\.[^"\\]*)*"' # NOTE: Adds 1 backreference
-
-	# get the name
-	xprop -id "$window_id" | \
-		sed -nr \
-		-e "s/^WM_CLASS\\(STRING\\) = ($match_qstring), ($match_qstring)$/instance=\\1\\nclass=\\3/p" \
-		-e "s/^WM_WINDOW_ROLE\\(STRING\\) = ($match_qstring)$/window_role=\\1/p" \
-		-e "/^WM_NAME\\(STRING\\) = ($match_string)$/{s//title=\\1/; h}" \
-		-e "/^_NET_WM_NAME\\(UTF8_STRING\\) = ($match_qstring)$/{s//title=\\1/; h}" \
-		-e "\${g; p}"
-}
-
 govendorcheck() {
 	# shellcheck disable=SC2046
 	vendorcheck -u ./... | awk '{print $NF}' | sed -e "s#^github.com/jessfraz/$(basename $(pwd))/##"
-}
-
-restart_gpgagent(){
-	# Restart the gpg agent.
-	echo "Restarting gpg-agent and scdaemon..."
-	echo -e "\tgpg-agent: $(pgrep gpg-agent) | scdaemon: $(pgrep scdaemon)"
-
-	echo "Killing processes..."
-	# shellcheck disable=SC2046
-	kill -9 $(pgrep scdaemon) $(pgrep gpg-agent) >/dev/null 2>&1
-	echo -e "\tgpg-agent: $(pgrep gpg-agent) | scdaemon: $(pgrep scdaemon)"
-
-	gpgconf --reload gpg-agent
-	gpg-connect-agent updatestartuptty /bye >/dev/null 2>&1
-
-	echo "Restarted gpg-agent and scdaemon..."
 }
 
 gitsetoriginnopush() {
@@ -479,68 +382,4 @@ get_cad_exchanger_token() {
         -d '{"grant_type":"client_credentials","scope":"data:read data:write data:create data:convert data:share viewer:read"}' \
 		https://cloud.cadexchanger.com/api/v1/oauth2/token)
 	echo "$resp" | jq --raw-output '.access_token'
-}
-
-cad_upload_folder_contents() {
-	token=$(get_cad_exchanger_token)
-	# Run this inside the folder with all the files.
-	dir_name="rack-$(date '+%Y-%m-%d')"
-	# Create the folder
-	resp=$(curl -sSL -XPOST -H "Authorization: Bearer ${token}" \
-        -H "Content-Type: application/json" \
-        -d '{"folder": {"name":"'"${dir_name}"'", "parentFolder":"'"${CAD_EXCHANGER_PARENT_FOLDER}"'"}}' \
-		https://cloud.cadexchanger.com/api/v1/folders)
-	folder_id=$(echo "$resp" | jq --raw-output '.folder.id')
-
-	for file in *.{SLDPRT,SLDASM}; do
-		# Upload the file to the folder
-		echo "Uploading $file..."
-		set -x
-		curl -sSL -XPOST -H "Authorization: Bearer ${token}" \
-        	-F "parentFolder=${folder_id}" \
-        	-F "data=@${file}" \
-        	https://cloud.cadexchanger.com/api/v1/files
-		set +x
-	done
-}
-
-cad_convert_rack_files_to_collada() {
-	token=$(get_cad_exchanger_token)
-	# Get the file we want.
-	resp=$(curl -sSL -H "Authorization: Bearer ${token}" \
-		"https://cloud.cadexchanger.com/api/v1/files?name[startsWith]=OXC0000040")
-	rack_files=$(echo "$resp" | jq --raw-output '.files[] | @base64')
-
-	# Iterate over the files.
-	for row in $rack_files; do
-    	_jq() {
-     		echo "${row}" | base64 --decode | jq -r "${1}"
-    	}
-
-   		file_id=$(_jq '.id')
-   		file_name=$(_jq '.name')
-		if [[ "$file_name" == *SLDASM ]]; then
-			echo ""
-			echo "Converting file $file_name to collada..."
-
-			# Get the status of the file.
-			echo "File status:"
-			resp=$(curl -sSL -H "Authorization: Bearer ${token}" \
-				"https://cloud.cadexchanger.com/api/v1/files/${file_id}")
-			revision_id=$(echo "$resp" | jq --raw-output '.file.activeRevision')
-			echo "$resp" | jq .
-
-			# Get the status of the revison.
-			echo "Revision status:"
-			curl -sSL -H "Authorization: Bearer ${token}" \
-				"https://cloud.cadexchanger.com/api/v1/filerevisions/${revision_id}" | jq .
-
-			# Convert the file to COLLADA.
-			echo "Conversion response:"
-			curl -sSL -XPOST -H "Authorization: Bearer ${token}" \
-				-H "Content-Type: application/json" \
-				-d '{"format": "collada", "extension": "dae"}' \
-				"https://cloud.cadexchanger.com/api/v1/files/${file_id}/convert" | jq .
-		fi
-	done
 }
