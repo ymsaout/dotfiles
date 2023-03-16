@@ -49,15 +49,6 @@ git config --global github.user "$GH_USER"
 
 ```
 
-## Resources
-
-### `.vim`
-
-For my `.vimrc` and `.vim` dotfiles see
-[github.com/jessfraz/.vim](https://github.com/jessfraz/.vim).
-
-## Contributing
-
 ### Running the tests
 
 The tests use [shellcheck](https://github.com/koalaman/shellcheck). You don't
