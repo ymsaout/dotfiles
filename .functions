@@ -287,99 +287,35 @@ isup() {
 	fi
 }
 
-# build go static binary from root of project
-gostatic(){
-	local dir=$1
-	local arg=$2
-
-	if [[ -z $dir ]]; then
-		dir=$(pwd)
-	fi
-
-	local name
-	name=$(basename "$dir")
-	(
-	cd "$dir" || exit
-	export GOOS=linux
-	echo "Building static binary for $name in $dir"
-
-	case $arg in
-		"netgo")
-			set -x
-			go build -a \
-				-tags 'netgo static_build' \
-				-installsuffix netgo \
-				-ldflags "-w" \
-				-o "$name" .
-			;;
-		"cgo")
-			set -x
-			CGO_ENABLED=1 go build -a \
-				-tags 'cgo static_build' \
-				-ldflags "-w -extldflags -static" \
-				-o "$name" .
-			;;
-		*)
-			set -x
-			CGO_ENABLED=0 go build -a \
-				-installsuffix cgo \
-				-ldflags "-w" \
-				-o "$name" .
-			;;
-	esac
-	)
-}
-
-# go to a folder easily in your gopath
-gogo(){
-	local d=$1
-
-	if [[ -z $d ]]; then
-		echo "You need to specify a project name."
-		return 1
-	fi
-
-	if [[ "$d" == github* ]]; then
-		d=$(echo "$d" | sed 's/.*\///')
-	fi
-	d=${d%/}
-
-	# search for the project dir in the GOPATH
-	mapfile -t path < <(find "${GOPATH}/src" \( -type d -o -type l \) -iname "$d"  | awk '{print length, $0;}' | sort -n | awk '{print $2}')
-
-	if [ "${path[0]}" == "" ] || [ "${path[*]}" == "" ]; then
-		echo "Could not find a directory named $d in $GOPATH"
-		echo "Maybe you need to 'go get' it ;)"
-		return 1
-	fi
-
-	# enter the first path found
-	cd "${path[0]}" || return 1
-}
-
-golistdeps(){
-	(
-	if [[ -n "$1" ]]; then
-		gogo "$@"
-	fi
-
-	go list -e -f '{{join .Deps "\n"}}' ./... | xargs go list -e -f '{{if not .Standard}}{{.ImportPath}}{{end}}'
-	)
-}
-
-govendorcheck() {
-	# shellcheck disable=SC2046
-	vendorcheck -u ./... | awk '{print $NF}' | sed -e "s#^github.com/jessfraz/$(basename $(pwd))/##"
-}
-
 gitsetoriginnopush() {
 	git remote set-url --push origin no_push
 }
 
-get_cad_exchanger_token() {
-	resp=$(curl -XPOST -sSL -H "Authorization: Basic $CAD_EXCHANGER_REQUEST_TOKEN" \
-        -H "Content-Type: application/json" \
-        -d '{"grant_type":"client_credentials","scope":"data:read data:write data:create data:convert data:share viewer:read"}' \
-		https://cloud.cadexchanger.com/api/v1/oauth2/token)
-	echo "$resp" | jq --raw-output '.access_token'
+switch_solana_net() {
+  if [ -z "$1" ]; then
+    echo "Usage: switch_solana_net <devnet|testnet|mainnet>"
+    return 1
+  fi
+
+  local NET=$1
+
+  case $NET in
+    devnet)
+      solana config set --url https://api.devnet.solana.com
+      ;;
+    testnet)
+      solana config set --url https://api.testnet.solana.com
+      ;;
+    mainnet)
+      solana config set --url https://api.mainnet-beta.solana.com
+      ;;
+    *)
+      echo "Environnement non reconnu: $NET"
+      echo "Les options valides sont: devnet, testnet, mainnet"
+      return 1
+      ;;
+  esac
+
+  # Afficher la configuration actuelle
+  solana config get
 }
