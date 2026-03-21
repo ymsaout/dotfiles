@@ -1,0 +1,96 @@
+#!/bin/bash
+
+# Switch Solana cluster
+switch_solana_net() {
+	if [ -z "$1" ]; then
+		echo "Usage: switch_solana_net <devnet|testnet|mainnet>"
+		return 1
+	fi
+
+	local NET=$1
+
+	case $NET in
+		devnet)
+			solana config set --url https://api.devnet.solana.com
+			;;
+		testnet)
+			solana config set --url https://api.testnet.solana.com
+			;;
+		mainnet)
+			solana config set --url https://api.mainnet-beta.solana.com
+			;;
+		*)
+			echo "Environnement non reconnu: $NET"
+			echo "Les options valides sont: devnet, testnet, mainnet"
+			return 1
+			;;
+	esac
+
+	solana config get
+}
+
+# Show current network and wallet pubkey
+sol_info() {
+	echo "=== Network ==="
+	solana config get
+	echo ""
+	echo "=== Wallet ==="
+	solana address
+	echo ""
+	echo "=== Balance ==="
+	solana balance
+}
+
+# Check balance — current wallet or a given address
+sol_balance() {
+	if [ -z "$1" ]; then
+		solana balance
+	else
+		solana balance "$1"
+	fi
+}
+
+# Request airdrop (devnet/testnet only)
+sol_airdrop() {
+	local amount="${1:-1}"
+	local network
+	network=$(solana config get | grep "RPC URL" | awk '{print $3}')
+
+	if [[ "$network" == *"mainnet"* ]]; then
+		echo "Airdrop non disponible sur mainnet."
+		return 1
+	fi
+
+	solana airdrop "$amount"
+	solana balance
+}
+
+# Show current wallet public key
+sol_pubkey() {
+	solana address
+}
+
+# Tail logs for a program address
+# Usage: sol_logs <PROGRAM_ID>
+sol_logs() {
+	if [ -z "$1" ]; then
+		echo "Usage: sol_logs <PROGRAM_ID>"
+		return 1
+	fi
+	solana logs "$1"
+}
+
+# Get transaction details
+# Usage: sol_tx <SIGNATURE>
+sol_tx() {
+	if [ -z "$1" ]; then
+		echo "Usage: sol_tx <SIGNATURE>"
+		return 1
+	fi
+	solana confirm -v "$1"
+}
+
+# Show all token accounts for current wallet
+sol_tokens() {
+	spl-token accounts
+}

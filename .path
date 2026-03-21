@@ -1,0 +1,56 @@
+#!/bin/sh
+
+# Helper to safely prepend to PATH (no-op if already present)
+_prepend_path() {
+	case ":$PATH:" in
+		*":$1:"*) ;;
+		*) export PATH="$1:$PATH" ;;
+	esac
+}
+
+# Core system paths
+_prepend_path /usr/local/sbin
+_prepend_path /sbin
+_prepend_path /usr/local/bin
+
+# DuckDB CLI
+_prepend_path "$HOME/.duckdb/cli/latest"
+
+# Rust / Cargo
+if [ -f "$HOME/.cargo/env" ]; then
+	# shellcheck source=/dev/null
+	. "$HOME/.cargo/env"
+else
+	_prepend_path "$HOME/.cargo/bin"
+fi
+
+# Node Version Manager
+export NVM_DIR="$HOME/.nvm"
+# shellcheck source=/dev/null
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+# Local user binaries
+_prepend_path "$HOME/.local/bin"
+
+# Google Cloud SDK (conditional)
+if [ -d "$HOME/.google-cloud-sdk" ]; then
+	# shellcheck source=/dev/null
+	if [ -f "$HOME/.google-cloud-sdk/path.bash.inc" ]; then . "$HOME/.google-cloud-sdk/path.bash.inc"; fi
+	# shellcheck source=/dev/null
+	if [ -f "$HOME/.google-cloud-sdk/completion.bash.inc" ]; then . "$HOME/.google-cloud-sdk/completion.bash.inc"; fi
+	_prepend_path "$HOME/.google-cloud-sdk/bin"
+fi
+
+# Homebrew (Apple Silicon)
+_prepend_path "/opt/homebrew/sbin"
+_prepend_path "/opt/homebrew/bin"
+export LIBRARY_PATH="/opt/homebrew/lib:${LIBRARY_PATH}"
+export LDFLAGS="${LDFLAGS} -L/opt/homebrew/lib"
+export CPPFLAGS="${CPPFLAGS} -I/opt/homebrew/include"
+# shellcheck source=/dev/null
+if [ -r "/opt/homebrew/etc/profile.d/bash_completion.sh" ]; then . "/opt/homebrew/etc/profile.d/bash_completion.sh"; fi
+
+# Solana
+export SOLANA_HOME="$HOME/.local/share/solana/install/active_release/bin"
+_prepend_path "$SOLANA_HOME"
+

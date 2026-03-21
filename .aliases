@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# Easier navigation: .., ..., ...., ....., ~ and -
+alias ..="cd .."
+alias ...="cd ../.."
+alias ....="cd ../../.."
+alias .....="cd ../../../.."
+alias ~="cd ~"
+alias -- -="cd -"
+
+# Shortcuts
+alias dl="cd ~/Downloads"
+alias g="git"
+alias h="history"
+alias gc="git commit -v "
+alias k="kubectl"
+
+# ls — use macOS BSD flags (-G for color)
+alias ls="command ls -G"
+alias l="ls -lhF"
+alias la="ls -lahF"
+alias lsd="ls -lhF | grep --color=never '^d'"
+
+# Always enable colored grep output
+alias grep='grep --color=auto '
+
+# Enable aliases to be sudo'ed
+alias sudo='sudo '
+
+# Get week number
+alias week='date +%V'
+
+# Stopwatch
+alias timer='echo "Timer started. Stop with Ctrl-D." && date && time cat && date'
+
+# IP addresses
+alias pubip="dig +short myip.opendns.com @resolver1.opendns.com"
+alias localip="ipconfig getifaddr en0"
+alias ips="ifconfig -a | grep -o 'inet6\? \(\S*\)' | awk '{print \$2}'"
+
+# Flush DNS cache (macOS)
+alias flush="dscacheutil -flushcache && killall -HUP mDNSResponder"
+
+# View HTTP traffic (macOS uses en0)
+alias sniff="sudo ngrep -d 'en0' -t '^(GET|POST) ' 'tcp and port 80'"
+alias httpdump="sudo tcpdump -i en0 -n -s 0 -w - | grep -a -o -E \"Host\\: .*|GET \\/.*\""
+
+# macOS has no md5sum, use md5 as fallback
+command -v md5sum > /dev/null || alias md5sum="md5"
+
+# macOS has no sha1sum, use shasum as fallback
+command -v sha1sum > /dev/null || alias sha1sum="shasum"
+
+# URL-encode strings
+alias urlencode='python3 -c "import sys, urllib.parse; print(urllib.parse.quote_plus(sys.argv[1]));"'
+
+# Merge PDF files
+# Usage: `mergepdf -o output.pdf input{1,2,3}.pdf`
+alias mergepdf='/System/Library/Automator/Combine\ PDF\ Pages.action/Contents/Resources/join.py'
+
+# Intuitive map function
+alias map="xargs -n1"
+
+# Copy working directory path to clipboard
+alias cwd='pwd | tr -d "\r\n" | pbcopy'
+
+# Copy file interactive
+alias cp='cp -i'
+
+# Move file interactive
+alias mv='mv -i'

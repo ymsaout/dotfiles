@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Make vim the default editor
+export EDITOR=vim
+
+# Larger bash history (allow 32³ entries; default is 500)
+export HISTSIZE=50000000
+export HISTFILESIZE=$HISTSIZE
+export HISTCONTROL=ignoredups
+export HISTIGNORE=" *:ls:cd:cd -:pwd:exit:date:* --help:* -h"
+
+# Don't clear the screen after quitting a manual page
+export MANPAGER="less -X"
+
+# Disable Docker image signature verification.
+# Set to 1 to enforce signed images (recommended for production).
+export DOCKER_CONTENT_TRUST=0
+
+# Ansible vault password file
+export ANSIBLE_VAULT_PASSWORD_FILE="~/.ansible-vault-password"

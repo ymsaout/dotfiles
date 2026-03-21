@@ -1,0 +1,89 @@
+##
+# OS X
+##
+.DS_Store
+.AppleDouble
+.LSOverride
+xcuserdata
+Pods
+keyrace-mac.xcworkspace/
+
+# Icon must end with two \r
+Icon
+
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+##
+# Vim
+##
+# swap
+[._]*.sw[a-z]
+[._]sw[a-z]
+# session
+Session.vim
+# temporary
+.netrwhist
+*~
+# auto-generated tag files
+tags
+
+##
+# C
+##
+*.o
+*.ko
+*.elf
+*.gch
+*.pch
+*.lib
+*.a
+*.la
+*.lo
+*.dll
+*.so
+*.so.*
+*.dylib
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+*.dSYM/
+
+##
+# C++
+##
+*.slo
+*.obj
+*.mod
+*.lai
+
+##
+# Rust
+##
+target/
+
+##
+# Python
+##
+.venv
+__pycache__/
+*.pyc
