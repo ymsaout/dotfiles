@@ -168,7 +168,4 @@
 [pull]
 	rebase = true
 
-[user]
-
-	name = Yves-Marie Saout
-	email = ymsaout42@gmail.com
+# [user] and [github] are set via env vars in ~/.extra — see .extra.example
