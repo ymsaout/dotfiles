@@ -22,7 +22,6 @@ dotfiles: ## Creates symlinks for all dotfiles in $HOME.
 		ln -sfn $$file $(HOME)/$$f; \
 	done
 	ln -sfn $(CURDIR)/gitignore $(HOME)/.gitignore
-	git update-index --skip-worktree $(CURDIR)/.gitconfig
 
 .PHONY: help
 help:
