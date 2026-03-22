@@ -74,6 +74,34 @@ install_base() {
 }
 
 ###############################################################################
+# Node (nvm + LTS)
+###############################################################################
+
+install_node() {
+	if ! command -v nvm &>/dev/null && [ ! -d "$HOME/.nvm" ]; then
+		echo "Installing nvm..."
+		curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/HEAD/install.sh | bash
+	else
+		echo "nvm already installed, updating..."
+		(
+			cd "$HOME/.nvm"
+			git fetch --tags origin
+			git checkout "$(git describe --abbrev=0 --tags --match 'v[0-9]*' "$(git rev-list --tags --max-count=1)")"
+		)
+	fi
+
+	# Load nvm in current shell
+	# shellcheck source=/dev/null
+	export NVM_DIR="$HOME/.nvm"
+	[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+	echo "Installing Node LTS..."
+	nvm install --lts
+	nvm use --lts
+	nvm alias default 'lts/*'
+}
+
+###############################################################################
 # Rust
 ###############################################################################
 
@@ -101,7 +129,8 @@ usage() {
 	echo "Usage:"
 	echo "  base   - install Homebrew + base packages + bash 5"
 	echo "  rust   - install Rust"
-	echo "  all    - run everything (base + rust)"
+	echo "  node   - install nvm + Node LTS"
+	echo "  all    - run everything (base + rust + node)"
 }
 
 main() {
@@ -121,9 +150,13 @@ main() {
 		rust)
 			install_rust
 			;;
+		node)
+			install_node
+			;;
 		all)
 			install_base
 			install_rust
+			install_node
 			;;
 		*)
 			usage
