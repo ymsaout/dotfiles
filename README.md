@@ -57,13 +57,16 @@ Save env vars, tokens, and machine-specific config in a `~/.extra` file (not com
 $ cp ~/dotfiles/.extra.example ~/.extra
 ```
 
-**Git identity is required** — it is not stored in `.gitconfig`:
+**Git identity is required** — set it directly so it works everywhere (terminal, VSCode, CI...):
 
 ```bash
-export GIT_AUTHOR_NAME="Your Name"
-export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
-export GIT_AUTHOR_EMAIL="you@example.com"
-export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+```
+
+You can also export `GITHUB_USER` and other tokens in `~/.extra`:
+
+```bash
 export GITHUB_USER="your_github_username"
 ```
 
