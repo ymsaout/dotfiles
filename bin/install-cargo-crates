@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+set -o pipefail
+
+# install-cargo-crates
+#   Installs private Cargo crates from GitHub via SSH
+
+CRATES=(
+  "ssh://git@github.com/ymsaout/sol-next-leader-slots"
+  "ssh://git@github.com/ymsaout/sol-keypair-viewer"
+)
+
+for repo in "${CRATES[@]}"; do
+  echo "Installing $(basename "$repo")..."
+  cargo install --git "$repo" --force
+done
+
+echo "All cargo crates installed."

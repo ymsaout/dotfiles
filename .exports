@@ -18,3 +18,6 @@ export DOCKER_CONTENT_TRUST=0
 
 # Ansible vault password file
 export ANSIBLE_VAULT_PASSWORD_FILE="~/.ansible-vault-password"
+
+#vscode
+export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"

@@ -1,4 +1,5 @@
 SHELL := bash
+BIN_DIR := $(HOME)/.local/bin
 
 .PHONY: all
 all: dotfiles ## Installs the dotfiles.
@@ -22,6 +23,12 @@ dotfiles: ## Creates symlinks for all dotfiles in $HOME.
 		ln -sfn $$file $(HOME)/$$f; \
 	done
 	ln -sfn $(CURDIR)/gitignore $(HOME)/.gitignore
+
+.PHONY: bins
+bins: ## Creates symlinks for all scripts in bin/ into /usr/local/bin.
+	for file in $(CURDIR)/bin/*; do \
+		ln -sfn $$file $(BIN_DIR)/$$(basename $$file); \
+	done
 
 .PHONY: help
 help:
